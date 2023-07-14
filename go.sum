@@ -249,6 +249,8 @@ github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230713054653-19c16a7b5591 
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230713054653-19c16a7b5591/go.mod h1:niA2xneogLheMkmLJoSoG85sWI4ZIKKwnfDFP+q3Ij8=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230713063808-4053dcf98e8c h1:d2xLHfJzXA3N0zYBwDYb18uSHkbbw/YUA0QC3Fmfgmo=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230713063808-4053dcf98e8c/go.mod h1:niA2xneogLheMkmLJoSoG85sWI4ZIKKwnfDFP+q3Ij8=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230714055547-ca1edfb89119 h1:yaSgYyBXsY7q9b4AWb0Ah8iyuk8oHQDThQ11aEJfq4A=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230714055547-ca1edfb89119/go.mod h1:niA2xneogLheMkmLJoSoG85sWI4ZIKKwnfDFP+q3Ij8=
 github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=

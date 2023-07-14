@@ -9,6 +9,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/provider"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	v1Client "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1"
@@ -56,7 +57,7 @@ func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *
 
 // ReceivePipelineInfo is tracking tekton.dev/v1, kind: PipelineRun type objects
 func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string) (contract.PipelineInfo, error) {
-	// globalCfg := prp.confProvider.FetchGlobal("global")
+	globalCfg := prp.confProvider.FetchGlobal("global")
 
 	pipelineRun, err := prp.client.PipelineRuns(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
@@ -89,6 +90,13 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		return contract.PipelineInfo{}, errors.Wrap(fetchErr, "cannot fetch stages list")
 	}
 
+	dashboardUrl, dashboardTplErr := templating.TemplateDashboardUrl(
+		globalCfg.Get("dashboard-url"), pipelineRun, pipelineRun.TypeMeta,
+	)
+	if dashboardTplErr != nil {
+		prp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
+	}
+
 	pi := contract.NewPipelineInfo(
 		scm,
 		namespace,
@@ -98,15 +106,23 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		stages,
 		labels.Set(pipelineRun.GetLabels()),
 		labels.Set(pipelineRun.GetAnnotations()),
+		contract.PipelineInfoWithUrl(dashboardUrl),
+		// todo: logs collection
 	)
 	return *pi, nil
 }
 func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun) ([]contract.PipelineStage, error) {
 	// Collect all tasks in valid order
 	orderedTasks := make([]contract.PipelineStage, 0)
-	for _, task := range pipelineRun.Spec.TaskRunSpecs {
+
+	if pipelineRun.Status.PipelineSpec == nil {
+		return []contract.PipelineStage{}, errors.New("Pipeline is not ready yet - " +
+			"we should wait a little bit until it not be picked by Tekton Controller")
+	}
+
+	for _, task := range pipelineRun.Status.PipelineSpec.Tasks {
 		orderedTasks = append(orderedTasks, contract.PipelineStage{
-			Name:   task.PipelineTaskName,
+			Name:   task.Name,
 			Status: contract.PipelinePending,
 		})
 	}
@@ -163,15 +179,17 @@ func receivePipelineName(pipelineRun *v1.PipelineRun) string {
 
 func translateTaskStatus(task *v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
-		// todo
-		return contract.PipelineErrored
+		return contract.PipelineCancelled
 	}
 	if !task.HasStarted() {
 		return contract.PipelinePending
 	}
-	if task.IsSuccessful() {
-		return contract.PipelineSucceeded
-	} else {
-		return contract.PipelineFailed
+	if task.IsDone() {
+		if task.IsSuccessful() {
+			return contract.PipelineSucceeded
+		} else {
+			return contract.PipelineFailed
+		}
 	}
+	return contract.PipelineRunning
 }

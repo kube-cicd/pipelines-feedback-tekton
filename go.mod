@@ -38,7 +38,7 @@ require (
 	github.com/jenkins-x/go-scm v1.13.13 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230713063808-4053dcf98e8c // indirect
+	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20230714055547-ca1edfb89119 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
