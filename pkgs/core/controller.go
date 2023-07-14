@@ -11,6 +11,5 @@ func CreateTektonController() *controller.GenericController {
 		PipelineInfoProvider: &PipelineRunProvider{},
 		ObjectType:           &v1.PipelineRun{},
 		Store:                store.Operator{Store: store.NewMemory()},
-		// todo: schema provider
 	}
 }
