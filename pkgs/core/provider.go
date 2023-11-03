@@ -57,7 +57,7 @@ func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *
 }
 
 // ReceivePipelineInfo is tracking tekton.dev/v1, kind: PipelineRun type objects
-func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string) (contract.PipelineInfo, error) {
+func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name string, namespace string, log *logging.InternalLogger) (contract.PipelineInfo, error) {
 	globalCfg := prp.confProvider.FetchGlobal("global")
 
 	pipelineRun, err := prp.client.PipelineRuns(namespace).Get(ctx, name, metav1.GetOptions{})
@@ -86,7 +86,7 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 	}
 
 	// stages
-	stages, fetchErr := prp.collectStatus(ctx, pipelineRun)
+	stages, fetchErr := prp.collectStatus(ctx, pipelineRun, log)
 	if fetchErr != nil {
 		return contract.PipelineInfo{}, errors.Wrap(fetchErr, "cannot fetch stages list")
 	}
@@ -95,7 +95,7 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		globalCfg.Get("dashboard-url"), pipelineRun, pipelineRun.TypeMeta,
 	)
 	if dashboardTplErr != nil {
-		prp.logger.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
+		log.Warningf("Cannot render dashboard template URL '%s': '%s'", dashboardUrl, dashboardTplErr.Error())
 	}
 
 	pi := contract.NewPipelineInfo(
@@ -112,7 +112,7 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 	)
 	return *pi, nil
 }
-func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun) ([]contract.PipelineStage, error) {
+func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun, log *logging.InternalLogger) ([]contract.PipelineStage, error) {
 	// Collect all tasks in valid order
 	orderedTasks := make([]contract.PipelineStage, 0)
 
@@ -144,20 +144,20 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 	for num, task := range orderedTasks {
 		taskRunName, exists := mapped[task.Name]
 		if !exists {
-			prp.logger.Debugf("TaskRun for task '%s' does not exist at all. Status = pending", task.Name)
+			log.Debugf("TaskRun for task '%s' does not exist at all. Status = pending", task.Name)
 			task.Status = contract.PipelinePending
 			continue
 		}
 
 		taskRun, taskRunExists := pipelineTasks[taskRunName]
 		if !taskRunExists {
-			prp.logger.Debugf("TaskRun %s does not exist. Status = pending", taskRunName)
+			log.Debugf("TaskRun %s does not exist. Status = pending", taskRunName)
 			task.Status = contract.PipelinePending
 			continue
 		}
 
 		orderedTasks[num].Status = translateTaskStatus(taskRun)
-		prp.logger.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
+		log.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
 	}
 	return orderedTasks, nil
 }
