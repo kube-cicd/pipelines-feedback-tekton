@@ -15,6 +15,7 @@ import (
 	v1Client "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"knative.dev/pkg/apis"
 	"time"
 )
 
@@ -39,8 +40,8 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	return nil
 }
 
-func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *v1.PipelineRun) (map[string]*v1.TaskRun, error) {
-	result := make(map[string]*v1.TaskRun, 0)
+func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *v1.PipelineRun) (map[string]v1.TaskRun, error) {
+	result := make(map[string]v1.TaskRun, 0)
 
 	// finds all tasks matching this PipelineRun
 	children, retrieveErr := prp.client.TaskRuns(pipelineRun.Namespace).List(ctx, metav1.ListOptions{
@@ -50,7 +51,7 @@ func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *
 		return result, errors.New("cannot retrieve TaskRuns by label")
 	}
 	for _, task := range children.Items {
-		result[task.Name] = &task
+		result[task.Name] = task
 	}
 	return result, nil
 }
@@ -61,7 +62,7 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 
 	pipelineRun, err := prp.client.PipelineRuns(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		return contract.PipelineInfo{}, errors.New("cannot fetch Tekton PipelineRun")
+		return contract.PipelineInfo{}, errors.Wrap(err, "cannot fetch Tekton PipelineRun")
 	}
 
 	// validate
@@ -143,17 +144,20 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 	for num, task := range orderedTasks {
 		taskRunName, exists := mapped[task.Name]
 		if !exists {
+			prp.logger.Debugf("TaskRun for task '%s' does not exist at all. Status = pending", task.Name)
 			task.Status = contract.PipelinePending
 			continue
 		}
 
 		taskRun, taskRunExists := pipelineTasks[taskRunName]
 		if !taskRunExists {
+			prp.logger.Debugf("TaskRun %s does not exist. Status = pending", taskRunName)
 			task.Status = contract.PipelinePending
 			continue
 		}
 
 		orderedTasks[num].Status = translateTaskStatus(taskRun)
+		prp.logger.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
 	}
 	return orderedTasks, nil
 }
@@ -177,19 +181,22 @@ func receivePipelineName(pipelineRun *v1.PipelineRun) string {
 	return pipelineName
 }
 
-func translateTaskStatus(task *v1.TaskRun) contract.Status {
+func translateTaskStatus(task v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
 		return contract.PipelineCancelled
 	}
-	if !task.HasStarted() {
+	finish := task.Status.GetCondition(apis.ConditionSucceeded)
+	if finish == nil {
 		return contract.PipelinePending
 	}
-	if task.IsDone() {
-		if task.IsSuccessful() {
-			return contract.PipelineSucceeded
-		} else {
-			return contract.PipelineFailed
-		}
+	switch finish.Reason {
+	case "Pending":
+		return contract.PipelinePending
+	case "Succeeded":
+		return contract.PipelineSucceeded
+	case "Running":
+		return contract.PipelineRunning
+	default:
+		return contract.PipelineFailed
 	}
-	return contract.PipelineRunning
 }
