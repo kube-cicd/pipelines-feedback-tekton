@@ -196,6 +196,8 @@ func translateTaskStatus(task v1.TaskRun) contract.Status {
 		return contract.PipelineSucceeded
 	case "Running":
 		return contract.PipelineRunning
+	case "ExceededResourceQuota":
+		return contract.PipelinePending
 	default:
 		return contract.PipelineFailed
 	}
