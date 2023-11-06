@@ -10,6 +10,6 @@ func CreateTektonController() *controller.GenericController {
 	return &controller.GenericController{
 		PipelineInfoProvider: &PipelineRunProvider{},
 		ObjectType:           &v1.PipelineRun{},
-		Store:                store.Operator{Store: store.NewMemory()},
+		Store:                store.Operator{Store: store.NewRedis()},
 	}
 }
