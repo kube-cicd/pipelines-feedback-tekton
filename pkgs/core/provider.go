@@ -22,7 +22,7 @@ import (
 type PipelineRunProvider struct {
 	store        *store.Operator
 	logger       *logging.InternalLogger
-	confProvider *config.ConfigurationProvider
+	confProvider config.ConfigurationProviderInterface
 	client       v1Client.TektonV1Interface
 }
 
@@ -35,7 +35,7 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 
 	prp.store = sc.Store
 	prp.logger = sc.Log
-	prp.confProvider = &sc.Config
+	prp.confProvider = sc.Config
 
 	return nil
 }

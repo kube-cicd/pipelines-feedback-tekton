@@ -3,7 +3,7 @@ module github.com/kube-cicd/pipelines-feedback-tekton
 go 1.20
 
 require (
-	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231106125036-f4ab1a8c1eef
+	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231107214332-2d6cc283fb5b
 	github.com/pkg/errors v0.9.1
 	github.com/tektoncd/pipeline v0.49.0
 	k8s.io/apimachinery v0.28.3
