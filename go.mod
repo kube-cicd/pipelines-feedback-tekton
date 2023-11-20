@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231107214332-2d6cc283fb5b
 	github.com/pkg/errors v0.9.1
-	github.com/tektoncd/pipeline v0.53.0
+	github.com/tektoncd/pipeline v0.53.2
 	k8s.io/apimachinery v0.28.3
 	knative.dev/pkg v0.0.0-20231011193800-bd99f2f98be7
 )
