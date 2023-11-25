@@ -5,7 +5,7 @@ go 1.20
 //replace github.com/kube-cicd/pipelines-feedback-core => /home/damian/Projekty/open-source/pipelines-feedback/pipelines-feedback-core
 
 require (
-	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125185757-d3992108f3f0
+	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125204340-56f2e5a1ce54
 	github.com/pkg/errors v0.9.1
 	github.com/tektoncd/cli v0.33.0
 	github.com/tektoncd/pipeline v0.53.0
