@@ -9,7 +9,7 @@ import (
 )
 
 func TestFetchLogs(t *testing.T) {
-	assert.Nil(t, testpkg.Kubectl([]string{"delete", "-f", "../../test_data/test-run.yaml"}))
+	_ = testpkg.Kubectl([]string{"delete", "-f", "../../test_data/test-run.yaml"})
 	assert.Nil(t, testpkg.Kubectl([]string{"apply", "-f", "../../test_data/test-run.yaml"}))
 	testpkg.WaitForPipelineFinishedByName("default", "test-run")
 
