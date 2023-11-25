@@ -3,6 +3,15 @@ Tekton Pipelines Feedback
 
 Kubernetes controller - provides an SCM (and not only) integration to notify external systems about Tekton Pipelines execution.
 
+How it works?
+-------------
+
+Controller on the cluster is watching tagged `PipelineRun` resources and notifying external system, e.g. Gitlab - adding a comment to Merge Request and setting a commit status (red/green).
+
+![gitlab.png](docs/gitlab.png)
+
+![github.png](docs/github.png)
+
 
 Built using pipelines-feedback-core
 -----------------------------------
