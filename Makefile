@@ -37,7 +37,7 @@ k3d-install:
 	wget https://github.com/k3d-io/k3d/releases/download/v5.6.0/k3d-linux-amd64 -O .build/k3d 2>/dev/null
 	@chmod +x .build/k3d
 
-k3d:
+k3d: k3d-install
 	(${SUDO} docker ps | grep k3d-${ENV_CLUSTER_NAME}-server-0 > /dev/null 2>&1) || ${SUDO} ./.build/k3d cluster create ${ENV_CLUSTER_NAME} --registry-create ${ENV_CLUSTER_NAME}-registry:0.0.0.0:5000 --agents 0
 	./.build/k3d kubeconfig merge ${ENV_CLUSTER_NAME}
 
