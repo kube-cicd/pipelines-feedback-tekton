@@ -322,6 +322,8 @@ github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231107214332-2d6cc283fb5b 
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231107214332-2d6cc283fb5b/go.mod h1:lR+kCNBZTHxFZrWsZbA+V1PsjkwUDLs4lmgKlBN6xoo=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231124134255-f9c518b17d83 h1:NoHCiGi0Th96AKQPhkONQVtG1rXWN/Rtk6+MXNlrmZY=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231124134255-f9c518b17d83/go.mod h1:yACKqojfh1AmTpE5hqtGW2lHUae2a25kPFuKr81L7KQ=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125185757-d3992108f3f0 h1:GTT4unCWIboPDvmFG+WKMfNxynUXA88k5gdM2iaCN0M=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125185757-d3992108f3f0/go.mod h1:yACKqojfh1AmTpE5hqtGW2lHUae2a25kPFuKr81L7KQ=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de h1:9TO3cAIGXtEhnIaL+V+BEER86oLrvS+kWobKpbJuye0=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de/go.mod h1:zAbeS9B/r2mtpb6U+EI2rYA5OAXxsYw6wTamcNW+zcE=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=

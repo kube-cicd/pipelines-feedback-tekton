@@ -114,6 +114,7 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		stages,
 		labels.Set(pipelineRun.GetLabels()),
 		labels.Set(pipelineRun.GetAnnotations()),
+		&globalCfg,
 		contract.PipelineInfoWithUrl(dashboardUrl),
 		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun) }),
 	)
