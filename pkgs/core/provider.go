@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"context"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
@@ -11,10 +12,14 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
+	"github.com/tektoncd/cli/pkg/cli"
+	"github.com/tektoncd/cli/pkg/log"
+	"github.com/tektoncd/cli/pkg/options"
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	v1Client "github.com/tektoncd/pipeline/pkg/client/clientset/versioned/typed/pipeline/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/rest"
 	"knative.dev/pkg/apis"
 	"time"
 )
@@ -24,6 +29,7 @@ type PipelineRunProvider struct {
 	logger       *logging.InternalLogger
 	confProvider config.ConfigurationProviderInterface
 	client       v1Client.TektonV1Interface
+	restConfig   *rest.Config
 }
 
 func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext) error {
@@ -36,6 +42,7 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	prp.store = sc.Store
 	prp.logger = sc.Log
 	prp.confProvider = sc.Config
+	prp.restConfig = sc.KubeConfig
 
 	return nil
 }
@@ -108,10 +115,38 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		labels.Set(pipelineRun.GetLabels()),
 		labels.Set(pipelineRun.GetAnnotations()),
 		contract.PipelineInfoWithUrl(dashboardUrl),
-		// todo: logs collection
+		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun) }),
 	)
 	return *pi, nil
 }
+
+// fetchLogs is using tkn cli client code to fetch logs from a PipelineRun
+func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
+	params := &cli.TektonParams{}
+	params.SetNamespace(pipelineRun.Namespace)
+	params.SetNoColour(true)
+	_, _ = params.Clients(prp.restConfig)
+
+	opts := options.NewLogOptions(params)
+	opts.Limit = 64
+	opts.PipelineRunName = pipelineRun.Name
+
+	lr, err := log.NewReader(log.LogTypePipeline, opts)
+	if err != nil {
+		prp.logger.Errorf("Cannot open logs: %s", err.Error())
+		return ""
+	}
+	logC, errC, err := lr.Read()
+	if err != nil {
+		prp.logger.Errorf("Cannot read logs: %s", err.Error())
+		return ""
+	}
+
+	buf := new(bytes.Buffer)
+	log.NewWriter(log.LogTypePipeline, opts.Prefixing).Write(&cli.Stream{Out: buf}, logC, errC)
+	return buf.String()
+}
+
 func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun, log *logging.InternalLogger) ([]contract.PipelineStage, error) {
 	// Collect all tasks in valid order
 	orderedTasks := make([]contract.PipelineStage, 0)

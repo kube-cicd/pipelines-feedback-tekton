@@ -16,7 +16,7 @@ jobs:
               run: make build
 
             - name: Test
-              run: make test
+              run: make k3d k3d-install-tekton test
 
             - name: Test report
               if: always() && !contains(github.event.head_commit.message, '!test skip')
