@@ -16,6 +16,7 @@ jobs:
         with:
             containerImage: "quay.io/pipelines-feedback/tekton"
             containerRegistryHost: "quay.io"
+            testCommand: "make k3d k3d-install-tekton test"
 
     release-helm:
         uses: kube-cicd/.github/.github/workflows/helm.common.yaml@main
