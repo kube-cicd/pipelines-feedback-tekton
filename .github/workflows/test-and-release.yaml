@@ -1,0 +1,31 @@
+name: Test and release
+on:
+    push:
+        tags:
+            - "*"
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    build:
+        uses: kube-cicd/.github/.github/workflows/app.common.yaml@main
+        secrets:
+            containerRegistryUsername: "${{ secrets.QUAY_USERNAME }}"
+            containerRegistryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        with:
+            containerImage: "quay.io/pipelines-feedback/tekton"
+            containerRegistryHost: "quay.io"
+
+    release-helm:
+        uses: kube-cicd/.github/.github/workflows/helm.common.yaml@main
+        needs: ["build"]
+        secrets:
+            registryUsername: "${{ secrets.QUAY_USERNAME }}"
+            registryPassword: "${{ secrets.QUAY_PASSWORD }}"
+        with:
+            chartRepoName: "pipelines-feedback"
+            chartName: "tekton-chart"
+            chartPath: "charts/tekton-chart"
+            enableHelmDocs: false
+            registryHost: "quay.io"

@@ -1,0 +1,13 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" .  }}{{ template "chart.typeBadge" .  }}{{ template "chart.appVersionBadge" .  }}
+
+`apiVersion: tekton.dev/v1`, `kind: PipelineRun` feedback. Reports Jobs progress to external systems like Gitlab or GitHub.
+Track progress of your Pipelines in realtime.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

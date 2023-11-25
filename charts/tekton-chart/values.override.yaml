@@ -1,0 +1,5 @@
+controller:
+    deployment:
+        image:
+            repository: quay.io/pipelines-feedback/tekton
+            pullPolicy: Always
