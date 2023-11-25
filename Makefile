@@ -44,5 +44,5 @@ k3d: k3d-install
 k3d-install-tekton:
 	export KUBECONFIG=~/.k3d/kubeconfig-${ENV_CLUSTER_NAME}.yaml; \
 	kubectl create ns tekton-pipelines || true; \
-	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.44.4/release.yaml
+	kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.44.4/release.yaml; \
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/part-of=tekton-pipelines -n tekton-pipelines
