@@ -40,7 +40,7 @@ tools-install:
 
 k3d: tools-install
 	(${SUDO} docker ps | grep k3d-${ENV_CLUSTER_NAME}-server-0 > /dev/null 2>&1) || ${SUDO} ./.build/k3d cluster create ${ENV_CLUSTER_NAME} --registry-create ${ENV_CLUSTER_NAME}-registry:0.0.0.0:5000 --agents 0
-	./.build/k3d kubeconfig merge ${ENV_CLUSTER_NAME}
+	mkdir -p ~/.k3d; path=$$(./.build/k3d kubeconfig merge ${ENV_CLUSTER_NAME}); cp $$path ~/.k3d/kubeconfig-${ENV_CLUSTER_NAME}.yaml
 
 k3d-install-tekton:
 	export KUBECONFIG=~/.k3d/kubeconfig-${ENV_CLUSTER_NAME}.yaml; \
