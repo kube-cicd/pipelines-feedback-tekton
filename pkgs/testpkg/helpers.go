@@ -7,7 +7,7 @@ import (
 
 func Kubectl(argv []string) error {
 	proc := exec.Command("kubectl", argv...)
-
+	_ = proc.Start()
 	waitErr := proc.Wait()
 	out, _ := proc.CombinedOutput()
 	logrus.Println(string(out))

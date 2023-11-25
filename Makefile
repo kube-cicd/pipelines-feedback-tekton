@@ -1,5 +1,6 @@
 SUDO=
 ENV_CLUSTER_NAME=pft
+BIN_NAME=pipelines-feedback-tekton
 
 .PHONY: all
 all: build
@@ -10,10 +11,10 @@ PATH = $(LOCALBIN):$(shell echo $$PATH)
 .PHONY: build
 build: fmt vet ## Build manager binary.
 	@mkdir -p $(LOCALBIN)
-	go build -o $(LOCALBIN)/pipelines-feedback-tekton main.go
+	go build -o $(LOCALBIN)/${BIN_NAME} main.go
 
 run:
-	./.build/pipelines-feedback-tekton --debug
+	./.build/p${BIN_NAME} --debug
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
