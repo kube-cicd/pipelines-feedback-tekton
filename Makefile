@@ -11,7 +11,7 @@ PATH = $(LOCALBIN):$(shell echo $$PATH)
 .PHONY: build
 build: fmt vet ## Build manager binary.
 	@mkdir -p $(LOCALBIN)
-	go build -o $(LOCALBIN)/${BIN_NAME} main.go
+	CGO_ENABLED=0 GOOS=linux go build -o $(LOCALBIN)/${BIN_NAME} main.go
 
 run:
 	./.build/p${BIN_NAME} --debug
