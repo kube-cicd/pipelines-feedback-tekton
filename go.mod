@@ -11,7 +11,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.34.0
 	github.com/tektoncd/pipeline v0.55.0
-	k8s.io/apimachinery v0.29.0
+	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.0
 	knative.dev/pkg v0.0.0-20231123185329-ea6ea8440341
 )
