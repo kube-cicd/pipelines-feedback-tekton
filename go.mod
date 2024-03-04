@@ -8,7 +8,7 @@ require (
 	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125204340-56f2e5a1ce54
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/tektoncd/cli v0.34.0
 	github.com/tektoncd/pipeline v0.55.0
 	k8s.io/apimachinery v0.29.0
