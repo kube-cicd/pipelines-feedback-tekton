@@ -2,7 +2,7 @@ module github.com/kube-cicd/pipelines-feedback-tekton
 
 go 1.22.0
 
-replace github.com/kube-cicd/pipelines-feedback-core => /home/damian/Projekty/open-source/pipelines-feedback/pipelines-feedback-core
+// replace github.com/kube-cicd/pipelines-feedback-core => /home/damian/Projekty/open-source/pipelines-feedback/pipelines-feedback-core
 
 require (
 	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240520193624-b59960faf32f
