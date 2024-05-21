@@ -11,18 +11,20 @@ metadata:
 spec:
     pipelineSpec:
         tasks:
-            - name: clone
+            - name: skipped-task
               taskSpec:
+                  when:
+                      - input: "false"
+                        operator: in
+                        values: [ "true" ]
                   params:
                       - name: username
                         default: $(params.username)
                   steps:
                       - image: busybox
-                        name: print
+                        name: hello
                         script: |
-                            sleep 3
-                            echo "Bread for you, $(params.username)"
-                            sleep 5
+                            echo "This never executes - this task will be skipped"
 
             - name: test
               taskSpec:

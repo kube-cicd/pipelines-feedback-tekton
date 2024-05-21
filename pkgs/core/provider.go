@@ -3,6 +3,8 @@ package core
 import (
 	"bytes"
 	"context"
+	"time"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
@@ -21,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	"knative.dev/pkg/apis"
-	"time"
 )
 
 type PipelineRunProvider struct {
@@ -37,7 +38,7 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize PipelineRunProvider")
 	}
-	prp.client = client
+	prp.SetClient(client)
 
 	prp.store = sc.Store
 	prp.logger = sc.Log
@@ -45,6 +46,10 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	prp.restConfig = sc.KubeConfig
 
 	return nil
+}
+
+func (prp *PipelineRunProvider) SetClient(client v1Client.TektonV1Interface) {
+	prp.client = client
 }
 
 func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *v1.PipelineRun) (map[string]v1.TaskRun, error) {
@@ -178,6 +183,12 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 	}
 
 	for num, task := range orderedTasks {
+		// Skipped = on a "skipped tasks list" + TaskRun does not exist
+		if isTaskSkipped(pipelineRun, task.Name) {
+			orderedTasks[num].Status = contract.PipelineSkipped
+			continue
+		}
+
 		taskRunName, exists := mapped[task.Name]
 		if !exists {
 			log.Debugf("TaskRun for task '%s' does not exist at all. Status = pending", task.Name)
@@ -192,7 +203,7 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 			continue
 		}
 
-		orderedTasks[num].Status = translateTaskStatus(taskRun)
+		orderedTasks[num].Status = translateTaskStatus(pipelineRun, &taskRun)
 		log.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
 	}
 	return orderedTasks, nil
@@ -217,8 +228,18 @@ func receivePipelineName(pipelineRun *v1.PipelineRun) string {
 	return pipelineName
 }
 
-func translateTaskStatus(task v1.TaskRun) contract.Status {
+func isTaskSkipped(pipelineRun *v1.PipelineRun, taskPipelineName string) bool {
+	for _, skippedTask := range pipelineRun.Status.SkippedTasks {
+		if skippedTask.Name == taskPipelineName {
+			return true
+		}
+	}
+	return false
+}
+
+func translateTaskStatus(pipelineRun *v1.PipelineRun, task *v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
+		print("IsCancelled")
 		return contract.PipelineCancelled
 	}
 	finish := task.Status.GetCondition(apis.ConditionSucceeded)
