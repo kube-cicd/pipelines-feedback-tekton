@@ -5,7 +5,7 @@ go 1.22.0
 // replace github.com/kube-cicd/pipelines-feedback-core => /home/damian/Projekty/open-source/pipelines-feedback/pipelines-feedback-core
 
 require (
-	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240520193624-b59960faf32f
+	github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240521201856-6ceb4f9ce73a
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0

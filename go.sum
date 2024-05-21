@@ -334,6 +334,8 @@ github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125204340-56f2e5a1ce54 
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20231125204340-56f2e5a1ce54/go.mod h1:yACKqojfh1AmTpE5hqtGW2lHUae2a25kPFuKr81L7KQ=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240520193624-b59960faf32f h1:1S2cEWqQnMggWPCDXAhEDzvE6qNkJPsPVW8UgnTirtM=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240520193624-b59960faf32f/go.mod h1:TocGJt6ehkl8BQDOCAeh55exqKaVYOZM+aYcQovYdm0=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240521201856-6ceb4f9ce73a h1:jyyE9pdoY4tVV/aWhVY+CG/iCxt6pORiuwRWIe57tT4=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240521201856-6ceb4f9ce73a/go.mod h1:TocGJt6ehkl8BQDOCAeh55exqKaVYOZM+aYcQovYdm0=
 github.com/letsencrypt/boulder v0.0.0-20231026200631-000cd05d5491 h1:WGrKdjHtWC67RX96eTkYD2f53NDHhrq/7robWTAfk4s=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de h1:9TO3cAIGXtEhnIaL+V+BEER86oLrvS+kWobKpbJuye0=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de/go.mod h1:zAbeS9B/r2mtpb6U+EI2rYA5OAXxsYw6wTamcNW+zcE=
