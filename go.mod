@@ -1,6 +1,6 @@
 module github.com/kube-cicd/pipelines-feedback-tekton
 
-go 1.22.0
+go 1.22
 
 // replace github.com/kube-cicd/pipelines-feedback-core => /home/damian/Projekty/open-source/pipelines-feedback/pipelines-feedback-core
 
