@@ -203,7 +203,7 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 			continue
 		}
 
-		orderedTasks[num].Status = translateTaskStatus(pipelineRun, &taskRun)
+		orderedTasks[num].Status = translateTaskStatus(&taskRun)
 		log.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
 	}
 	return orderedTasks, nil
@@ -237,7 +237,7 @@ func isTaskSkipped(pipelineRun *v1.PipelineRun, taskPipelineName string) bool {
 	return false
 }
 
-func translateTaskStatus(pipelineRun *v1.PipelineRun, task *v1.TaskRun) contract.Status {
+func translateTaskStatus(task *v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
 		print("IsCancelled")
 		return contract.PipelineCancelled
