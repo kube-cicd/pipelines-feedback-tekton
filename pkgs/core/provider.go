@@ -248,7 +248,6 @@ func isTaskSkipped(pipelineRun *v1.PipelineRun, taskPipelineName string) bool {
 
 func translateTaskStatus(task *v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
-		print("IsCancelled")
 		return contract.PipelineCancelled
 	}
 	finish := task.Status.GetCondition(apis.ConditionSucceeded)
