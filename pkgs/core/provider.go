@@ -135,6 +135,9 @@ func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
 		}
 	}()
 
+	buf := new(bytes.Buffer)
+	stream := &cli.Stream{Out: buf, Err: buf, In: buf}
+
 	params := &cli.TektonParams{}
 	params.SetNamespace(pipelineRun.Namespace)
 	params.SetNoColour(true)
@@ -143,21 +146,20 @@ func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
 	opts := options.NewLogOptions(params)
 	opts.Limit = 64
 	opts.PipelineRunName = pipelineRun.Name
+	opts.Stream = stream
 
-	lr, err := log.NewReader(log.LogTypePipeline, opts)
-	if err != nil {
-		prp.logger.Errorf("Cannot open logs: %s", err.Error())
+	lr, nReaderErr := log.NewReader(log.LogTypePipeline, opts)
+	if nReaderErr != nil {
+		prp.logger.Errorf("Cannot open logs: %s", nReaderErr.Error())
 		return ""
 	}
-	logC, errC, err := lr.Read()
-	if err != nil {
-		prp.logger.Errorf("Cannot read logs: %s", err.Error())
+	logC, errC, lrErr := lr.Read()
+	if lrErr != nil {
+		prp.logger.Errorf("Cannot read logs: %s", lrErr.Error())
 		return ""
 	}
 
-	buf := new(bytes.Buffer)
 	writer := log.NewWriter(log.LogTypePipeline, opts.Prefixing)
-	stream := &cli.Stream{Out: buf, Err: buf}
 	writer.Write(stream, logC, errC)
 	return buf.String()
 }

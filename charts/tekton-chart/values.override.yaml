@@ -9,3 +9,6 @@ rbac:
         - apiGroups: ["tekton.dev"]
           resources: ["pipelineruns", "taskruns", "pipelines"]
           verbs: ["list", "get", "watch"]
+        - apiGroups: [""]
+          resources: ["pods"]
+          verbs: ["get", "list"]
