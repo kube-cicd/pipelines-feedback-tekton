@@ -327,6 +327,8 @@ github.com/ktr0731/go-fuzzyfinder v0.8.0 h1:+yobwo9lqZZ7jd1URPdCgZXTE2U1mpIVTkQo
 github.com/ktr0731/go-fuzzyfinder v0.8.0/go.mod h1:Bjpz5im+tppKE9Ii6UK1h+6RaX/lUvJ0ruO4LIYRkqo=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240521201856-6ceb4f9ce73a h1:jyyE9pdoY4tVV/aWhVY+CG/iCxt6pORiuwRWIe57tT4=
 github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240521201856-6ceb4f9ce73a/go.mod h1:TocGJt6ehkl8BQDOCAeh55exqKaVYOZM+aYcQovYdm0=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240522084908-c29da86cdca4 h1:g0gpNVLqwC3XbZu5WxRqM8jU9IqnULZbVwaNHRzWtbM=
+github.com/kube-cicd/pipelines-feedback-core v0.0.0-20240522084908-c29da86cdca4/go.mod h1:TocGJt6ehkl8BQDOCAeh55exqKaVYOZM+aYcQovYdm0=
 github.com/letsencrypt/boulder v0.0.0-20231026200631-000cd05d5491 h1:WGrKdjHtWC67RX96eTkYD2f53NDHhrq/7robWTAfk4s=
 github.com/letsencrypt/boulder v0.0.0-20231026200631-000cd05d5491/go.mod h1:o158RFmdEbYyIZmXAbrvmJWesbyxlLKee6X64VPVuOc=
 github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de h1:9TO3cAIGXtEhnIaL+V+BEER86oLrvS+kWobKpbJuye0=
