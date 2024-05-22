@@ -14,6 +14,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/tektoncd/cli/pkg/cli"
 	"github.com/tektoncd/cli/pkg/log"
 	"github.com/tektoncd/cli/pkg/options"
@@ -128,6 +129,12 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 
 // fetchLogs is using tkn cli client code to fetch logs from a PipelineRun
 func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
+	defer func() {
+		if err := recover(); err != nil {
+			logrus.Println("panic occurred while trying to fetch Tekton logs: ", err)
+		}
+	}()
+
 	params := &cli.TektonParams{}
 	params.SetNamespace(pipelineRun.Namespace)
 	params.SetNoColour(true)
@@ -149,7 +156,9 @@ func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
 	}
 
 	buf := new(bytes.Buffer)
-	log.NewWriter(log.LogTypePipeline, opts.Prefixing).Write(&cli.Stream{Out: buf}, logC, errC)
+	writer := log.NewWriter(log.LogTypePipeline, opts.Prefixing)
+	stream := &cli.Stream{Out: buf, Err: buf}
+	writer.Write(stream, logC, errC)
 	return buf.String()
 }
 
