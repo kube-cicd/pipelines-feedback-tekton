@@ -122,13 +122,13 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		labels.Set(pipelineRun.GetAnnotations()),
 		&globalCfg,
 		contract.PipelineInfoWithUrl(dashboardUrl),
-		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun) }),
+		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun, globalCfg) }),
 	)
 	return *pi, nil
 }
 
 // fetchLogs is using tkn cli client code to fetch logs from a PipelineRun
-func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
+func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun, cfg config.Data) string {
 	defer func() {
 		if err := recover(); err != nil {
 			logrus.Println("panic occurred while trying to fetch Tekton logs: ", err)
@@ -161,7 +161,11 @@ func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
 
 	writer := log.NewWriter(log.LogTypePipeline, opts.Prefixing)
 	writer.Write(stream, logC, errC)
-	return buf.String()
+
+	return k8s.TruncateLogs(
+		buf.String(),
+		cfg,
+	)
 }
 
 func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun, log *logging.InternalLogger) ([]contract.PipelineStage, error) {

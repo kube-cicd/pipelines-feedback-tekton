@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/fake"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/logging"
@@ -29,7 +30,7 @@ func TestFetchLogs(t *testing.T) {
 	run.Namespace = "default"
 
 	prp := PipelineRunProvider{logger: logging.CreateLogger(true)}
-	assert.Contains(t, prp.fetchLogs(&run), "Bread for you")
+	assert.Contains(t, prp.fetchLogs(&run, config.Data{}), "Bread for you")
 }
 
 // TestSkippedTask is checking if task marked as skipped is shown as skipped. Previously it was recognized as "pending"
