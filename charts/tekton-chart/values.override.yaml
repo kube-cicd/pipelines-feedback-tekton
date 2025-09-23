@@ -3,3 +3,12 @@ controller:
         image:
             repository: quay.io/pipelines-feedback/tekton
             pullPolicy: Always
+
+rbac:
+    jobRules: 
+        - apiGroups: ["tekton.dev"]
+          resources: ["pipelineruns", "taskruns", "pipelines"]
+          verbs: ["list", "get", "watch"]
+        - apiGroups: [""]
+          resources: ["pods"]
+          verbs: ["get", "list"]

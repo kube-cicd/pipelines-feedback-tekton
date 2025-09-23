@@ -49,3 +49,6 @@ k3d-install-tekton:
 	./.build/kubectl create ns tekton-pipelines || true; \
 	./.build/kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v1.4.0/release.yaml; \
 	./utils/test/wait-for-pods.sh -l app.kubernetes.io/part-of=tekton-pipelines -n tekton-pipelines
+
+dev-run: build
+	./.build/pipelines-feedback-tekton --store memory --controller-name pft-$$(whoami)-local -v -f debug --disable-crd

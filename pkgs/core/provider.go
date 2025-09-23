@@ -3,6 +3,8 @@ package core
 import (
 	"bytes"
 	"context"
+	"time"
+
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/config"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/contract/wiring"
@@ -12,6 +14,7 @@ import (
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/store"
 	"github.com/kube-cicd/pipelines-feedback-core/pkgs/templating"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/tektoncd/cli/pkg/cli"
 	"github.com/tektoncd/cli/pkg/log"
 	"github.com/tektoncd/cli/pkg/options"
@@ -21,7 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	"knative.dev/pkg/apis"
-	"time"
 )
 
 type PipelineRunProvider struct {
@@ -37,7 +39,7 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	if err != nil {
 		return errors.Wrap(err, "cannot initialize PipelineRunProvider")
 	}
-	prp.client = client
+	prp.SetClient(client)
 
 	prp.store = sc.Store
 	prp.logger = sc.Log
@@ -45,6 +47,10 @@ func (prp *PipelineRunProvider) InitializeWithContext(sc *wiring.ServiceContext)
 	prp.restConfig = sc.KubeConfig
 
 	return nil
+}
+
+func (prp *PipelineRunProvider) SetClient(client v1Client.TektonV1Interface) {
+	prp.client = client
 }
 
 func (prp *PipelineRunProvider) fetchTaskRuns(ctx context.Context, pipelineRun *v1.PipelineRun) (map[string]v1.TaskRun, error) {
@@ -116,13 +122,22 @@ func (prp *PipelineRunProvider) ReceivePipelineInfo(ctx context.Context, name st
 		labels.Set(pipelineRun.GetAnnotations()),
 		&globalCfg,
 		contract.PipelineInfoWithUrl(dashboardUrl),
-		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun) }),
+		contract.PipelineInfoWithLogsCollector(func() string { return prp.fetchLogs(pipelineRun, globalCfg) }),
 	)
 	return *pi, nil
 }
 
 // fetchLogs is using tkn cli client code to fetch logs from a PipelineRun
-func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
+func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun, cfg config.Data) string {
+	defer func() {
+		if err := recover(); err != nil {
+			logrus.Println("panic occurred while trying to fetch Tekton logs: ", err)
+		}
+	}()
+
+	buf := new(bytes.Buffer)
+	stream := &cli.Stream{Out: buf, Err: buf, In: buf}
+
 	params := &cli.TektonParams{}
 	params.SetNamespace(pipelineRun.Namespace)
 	params.SetNoColour(true)
@@ -131,21 +146,26 @@ func (prp *PipelineRunProvider) fetchLogs(pipelineRun *v1.PipelineRun) string {
 	opts := options.NewLogOptions(params)
 	opts.Limit = 64
 	opts.PipelineRunName = pipelineRun.Name
+	opts.Stream = stream
 
-	lr, err := log.NewReader(log.LogTypePipeline, opts)
-	if err != nil {
-		prp.logger.Errorf("Cannot open logs: %s", err.Error())
+	lr, nReaderErr := log.NewReader(log.LogTypePipeline, opts)
+	if nReaderErr != nil {
+		prp.logger.Errorf("Cannot open logs: %s", nReaderErr.Error())
 		return ""
 	}
-	logC, errC, err := lr.Read()
-	if err != nil {
-		prp.logger.Errorf("Cannot read logs: %s", err.Error())
+	logC, errC, lrErr := lr.Read()
+	if lrErr != nil {
+		prp.logger.Errorf("Cannot read logs: %s", lrErr.Error())
 		return ""
 	}
 
-	buf := new(bytes.Buffer)
-	log.NewWriter(log.LogTypePipeline, opts.Prefixing).Write(&cli.Stream{Out: buf}, logC, errC)
-	return buf.String()
+	writer := log.NewWriter(log.LogTypePipeline, opts.Prefixing)
+	writer.Write(stream, logC, errC)
+
+	return k8s.TruncateLogs(
+		buf.String(),
+		cfg,
+	)
 }
 
 func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *v1.PipelineRun, log *logging.InternalLogger) ([]contract.PipelineStage, error) {
@@ -178,6 +198,12 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 	}
 
 	for num, task := range orderedTasks {
+		// Skipped = on a "skipped tasks list" + TaskRun does not exist
+		if isTaskSkipped(pipelineRun, task.Name) {
+			orderedTasks[num].Status = contract.PipelineSkipped
+			continue
+		}
+
 		taskRunName, exists := mapped[task.Name]
 		if !exists {
 			log.Debugf("TaskRun for task '%s' does not exist at all. Status = pending", task.Name)
@@ -192,7 +218,7 @@ func (prp *PipelineRunProvider) collectStatus(ctx context.Context, pipelineRun *
 			continue
 		}
 
-		orderedTasks[num].Status = translateTaskStatus(taskRun)
+		orderedTasks[num].Status = translateTaskStatus(&taskRun)
 		log.Debugf("TaskRun '%s' status '%s'", taskRunName, orderedTasks[num].Status)
 	}
 	return orderedTasks, nil
@@ -217,7 +243,16 @@ func receivePipelineName(pipelineRun *v1.PipelineRun) string {
 	return pipelineName
 }
 
-func translateTaskStatus(task v1.TaskRun) contract.Status {
+func isTaskSkipped(pipelineRun *v1.PipelineRun, taskPipelineName string) bool {
+	for _, skippedTask := range pipelineRun.Status.SkippedTasks {
+		if skippedTask.Name == taskPipelineName {
+			return true
+		}
+	}
+	return false
+}
+
+func translateTaskStatus(task *v1.TaskRun) contract.Status {
 	if task.IsCancelled() {
 		return contract.PipelineCancelled
 	}
