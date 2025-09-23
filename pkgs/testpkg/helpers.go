@@ -1,8 +1,10 @@
 package testpkg
 
 import (
-	"github.com/sirupsen/logrus"
 	"os/exec"
+	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func Kubectl(argv []string) error {
@@ -19,8 +21,10 @@ func Kubectl(argv []string) error {
 
 func WaitForPipelineFinishedByName(ns string, name string) {
 	Kubectl([]string{"wait", "--for=condition=Succeeded", "pipelinerun", "-n", ns, name})
+	time.Sleep(5 * time.Second)
 }
 
 func WaitForPipelineFinishedByLabel(ns string, label string) {
 	Kubectl([]string{"wait", "--for=condition=Succeeded", "pipelinerun", "-n", ns, "-l", label})
+	time.Sleep(5 * time.Second)
 }
