@@ -35,7 +35,8 @@ test: ensure-go-junit-report
 	export KUBECONFIG=~/.k3d/kubeconfig-${ENV_CLUSTER_NAME}.yaml; export PATH=$$PATH:~/go/bin:$$GOROOT/bin:$$(pwd)/.build; go test -v ./... -covermode=count -coverprofile=coverage.out 2>&1 | go-junit-report -set-exit-code -out junit.xml -iocopy
 
 tools-install:
-	wget https://github.com/k3d-io/k3d/releases/download/v5.6.0/k3d-linux-amd64 -O .build/k3d 2>/dev/null
+	mkdir -p .build
+	wget https://github.com/k3d-io/k3d/releases/download/v5.8.3/k3d-linux-amd64 -O .build/k3d 2>/dev/null
 	wget https://dl.k8s.io/release/v1.28.4/bin/linux/amd64/kubectl -O .build/kubectl 2>/dev/null
 	@chmod +x .build/k3d .build/kubectl
 
@@ -46,5 +47,5 @@ k3d: tools-install
 k3d-install-tekton:
 	export KUBECONFIG=~/.k3d/kubeconfig-${ENV_CLUSTER_NAME}.yaml; \
 	./.build/kubectl create ns tekton-pipelines || true; \
-	./.build/kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.44.4/release.yaml; \
+	./.build/kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v1.4.0/release.yaml; \
 	./utils/test/wait-for-pods.sh -l app.kubernetes.io/part-of=tekton-pipelines -n tekton-pipelines

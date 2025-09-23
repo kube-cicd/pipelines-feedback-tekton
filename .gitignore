@@ -1,3 +1,5 @@
 .build/*
 !.build
 /charts/pipelines-feedback-common/
+/coverage.out
+/junit.xml
