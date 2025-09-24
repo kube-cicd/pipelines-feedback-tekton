@@ -17,7 +17,7 @@ spec:
                       - name: username
                         default: $(params.username)
                   steps:
-                      - image: busybox
+                      - image: ghcr.io/containerd/busybox:1.36
                         name: print
                         script: |
                             sleep 3

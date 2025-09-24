@@ -29,8 +29,9 @@ func TestFetchLogs(t *testing.T) {
 	run.Name = "test-run"
 	run.Namespace = "default"
 
+	data := config.NewData("jx-scm", map[string]string{}, &config.FakeValidator{}, &logging.InternalLogger{})
 	prp := PipelineRunProvider{logger: logging.CreateLogger(true)}
-	assert.Contains(t, prp.fetchLogs(&run, config.Data{}), "Bread for you")
+	assert.Contains(t, prp.fetchLogs(&run, data), "Bread for you")
 }
 
 // TestSkippedTask is checking if task marked as skipped is shown as skipped. Previously it was recognized as "pending"
